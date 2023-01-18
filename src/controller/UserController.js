@@ -29,6 +29,32 @@ class UserController {
       return res.json(null);
     }
   }
+
+  async update(req, res) {
+    try {
+      if (!req.params.id) {
+        return res.status(400).json({
+          errors: ['ID não enviado'],
+        });
+      }
+
+      const user = await User.findByPk(req.params.id);
+
+      if (!user) {
+        return res.status(400).json({
+          errors: ['Usuário não existe'],
+        });
+      }
+
+      const newDataUser = await user.update(req.body);
+
+      return res.json(newDataUser);
+    } catch (e) {
+      return res.status(400).json({
+        erross: e.errors.map((err) => err.message),
+      });
+    }
+  }
 }
 
 export default new UserController();
