@@ -1,3 +1,4 @@
+import { Sequelize } from 'sequelize';
 import User from '../models/User';
 
 class UserController {
@@ -13,8 +14,18 @@ class UserController {
   }
 
   async index(req, res) {
+    // Econtrar os ids maiores que 0
+    const { gt } = Sequelize.Op;
     try {
-      const users = await User.findAll();
+      const users = await User.findAll({
+        where: {
+          id: {
+            [gt]: 0,
+          },
+        },
+      });
+      console.log('USER ID', req.userId);
+      console.log('USER EMAIL', req.userEmail);
       return res.json(users);
     } catch (e) {
       return res.json(null);
@@ -23,7 +34,7 @@ class UserController {
 
   async show(req, res) {
     try {
-      const user = await User.findByPk(req.params.id);
+      const user = await User.findOne({ id: req.params.id });
       return res.json(user);
     } catch (e) {
       return res.json(null);
