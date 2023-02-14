@@ -1,4 +1,3 @@
-import { Sequelize } from 'sequelize';
 import User from '../models/User';
 
 class UserController {
@@ -14,18 +13,8 @@ class UserController {
   }
 
   async index(req, res) {
-    // Econtrar os ids maiores que 0
-    const { gt } = Sequelize.Op;
     try {
-      const users = await User.findAll({
-        where: {
-          id: {
-            [gt]: 0,
-          },
-        },
-      });
-      console.log('USER ID', req.userId);
-      console.log('USER EMAIL', req.userEmail);
+      const users = await User.findAll({ attributes: ['id', 'nome', 'email'] });
       return res.json(users);
     } catch (e) {
       return res.json(null);
@@ -34,8 +23,11 @@ class UserController {
 
   async show(req, res) {
     try {
-      const user = await User.findOne({ id: req.params.id });
-      return res.json(user);
+      const user = await User.findByPk(req.params.id);
+
+      const { id, nome, email } = user;
+
+      return res.json({ id, nome, email });
     } catch (e) {
       return res.json(null);
     }
@@ -43,13 +35,7 @@ class UserController {
 
   async update(req, res) {
     try {
-      if (!req.params.id) {
-        return res.status(400).json({
-          errors: ['ID não enviado'],
-        });
-      }
-
-      const user = await User.findByPk(req.params.id);
+      const user = await User.findByPk(req.userId);
 
       if (!user) {
         return res.status(400).json({
@@ -62,7 +48,7 @@ class UserController {
       return res.json(newDataUser);
     } catch (e) {
       return res.status(400).json({
-        erross: e.errors.map((err) => err.message),
+        erros: e.errors.map((err) => err.message),
       });
     }
   }
@@ -85,7 +71,10 @@ class UserController {
 
       await user.destroy();
 
-      return res.json(user);
+      return res.json({
+        user: [user],
+        delete: 'Usuário excluído',
+      });
     } catch (e) {
       return res.status(400).json({
         erross: e.errors.map((err) => err.message),
